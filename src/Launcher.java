@@ -17,7 +17,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL32.*;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Launcher {
@@ -32,14 +32,13 @@ public class Launcher {
     private int height = 600;
     private final Object lock = new Object();
     private boolean destroyed;
-    public final boolean windowed = false;
+    public final boolean windowed = true;
 
 
     private float mouseX, mouseY;
     private boolean[] keyDown = new boolean[GLFW.GLFW_KEY_LAST + 1];
 
-
-    private Matrix4f viewProjMatrix = new Matrix4f();
+    private Matrix4f mvpMatrix = new Matrix4f();
     private FloatBuffer fb = BufferUtils.createFloatBuffer(16);
 
     private void run() {
@@ -152,7 +151,7 @@ public class Launcher {
         fragmentShader.delete();
 
         // Obtain uniform location
-        int matLocation = shaderProgram.getUniformLocation("viewProjMatrix");
+        int mvpLocation = shaderProgram.getUniformLocation("mvpMatrix");
         long lastTime = System.nanoTime();
 
         /* Quaternion to rotate the cube */
@@ -167,18 +166,13 @@ public class Launcher {
             glViewport(0, 0, width, height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            // Create a view-projection matrix
-            viewProjMatrix.setPerspective((float) Math.toRadians(45.0f), (float) width / height, 0.01f, 100.0f)
-                    .lookAt(0.0f, 4.0f, 10.0f,
-                            0.0f, 0.5f, 0.0f,
-                            0.0f, 1.0f, 0.0f);
+            mvpMatrix.setPerspective((float) Math.toRadians(45.0f), (float) width / (float) height, 0.01f, 100.0f)
+                    .lookAt(0.0f, 2.0f, -3.0f,
+                            0.0f, 0.0f, 0.0f,
+                            0.0f, 1.0f, 0.0f)
+                    .translate(0.0f, 0.0f, 0.0f).rotate(q.rotateY((float) Math.toRadians(45) * dt).normalize()).scale(1.0f, 1.0f, 1.0f);
 
-            // rotate the cube (45 degrees per second)
-            // and translate it by 0.5 in y
-            viewProjMatrix.translate(0.0f, 0.5f, 0.0f)
-                    .rotate(q.rotateY((float) Math.toRadians(45) * dt).normalize());
-            // Upload the matrix
-            glUniformMatrix4fv(matLocation, false, viewProjMatrix.get(fb));
+            glUniformMatrix4fv(mvpLocation, false, mvpMatrix.get(fb));
 
 
             FloatBuffer pb = BufferUtils.createFloatBuffer(3 * 6 * 6);
