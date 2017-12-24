@@ -1,5 +1,8 @@
-uniform vec3 color;
+#version 150 core
 
-void main(void) {
-    gl_FragColor = vec4(color, 1.0);
+in vec4 vertexColor;
+out vec4 outColor;
+
+void main() {
+    outColor = vertexColor;
 }
