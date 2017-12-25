@@ -1,11 +1,19 @@
 package graphics;
 
+import org.joml.Matrix4f;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+
+import java.nio.FloatBuffer;
+
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderProgram {
     private final int id;
+    private FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
     public ShaderProgram() {
         id = glCreateProgram();
@@ -40,6 +48,10 @@ public class ShaderProgram {
         return glGetUniformLocation(id, name);
     }
 
+    public void setUniform(int location, Matrix4f value) {
+        glUniformMatrix4fv(location, false, value.get(matrixBuffer));
+    }
+
     public void use() {
         glUseProgram(id);
     }
@@ -53,6 +65,7 @@ public class ShaderProgram {
 
     public void delete() {
         glDeleteProgram(id);
+        MemoryUtil.memFree(matrixBuffer);
     }
 
 }
