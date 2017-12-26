@@ -1,6 +1,9 @@
-import graphics.*;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.GL;
+import graphics.Renderer;
+import graphics.Window;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector2f;
+import org.lwjgl.glfw.GLFWErrorCallback;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -8,7 +11,8 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Launcher {
     private GLFWErrorCallback errorCallback;
     private final Object lock = new Object();
-    Window mainWindow;
+    private Window window;
+    private Renderer renderer;
 
     private void run() {
         try {
@@ -16,7 +20,8 @@ public class Launcher {
             loop();
 
             synchronized (lock) {
-                mainWindow.destroy();
+                window.delete();
+                renderer.delete();
             }
         } finally {
             glfwTerminate();
@@ -30,30 +35,40 @@ public class Launcher {
         if (!glfwInit())
             throw new IllegalStateException("Unable to initialize GLFW");
 
-        mainWindow = new Window(640, 480, "WorldEngine", false, 0, false);
+        window = new Window(640, 480, "WorldEngine", true, 2, false);
     }
 
     private void rendererThread() {
 
-        Renderer renderer = new Renderer();
-        mainWindow.setContext();
+        renderer = new Renderer();
+        window.setContext();
         renderer.init();
 
         long lastTime = System.nanoTime();
 
-        while (!mainWindow.isDestroyed()) {
+        Quaternionf q = new Quaternionf();
+
+        while (!window.isDestroyed()) {
             long thisTime = System.nanoTime();
             float dt = (thisTime - lastTime) / 1E9f;
             lastTime = thisTime;
 
+            Vector2f cursorPos = window.getCursorPosition();
+            q.rotateY((float) Math.toRadians((cursorPos.x - 0.5f) * 100) * dt).normalize();
+            q.rotateX((float) Math.toRadians((cursorPos.y - 0.5f) * 100) * dt).normalize();
+            Matrix4f model = new Matrix4f().rotate(q);
+            renderer.updateModelMatrix(model);
+
             renderer.clear();
             renderer.begin();
+
             renderer.drawCube();
+
             renderer.end();
 
             synchronized (lock) {
-                if (!mainWindow.isDestroyed()) {
-                    mainWindow.update();
+                if (!window.isDestroyed()) {
+                    window.update();
                 }
             }
         }
@@ -67,7 +82,7 @@ public class Launcher {
         }).start();
 
         /* Process window messages in the main thread */
-        while (!mainWindow.isClosing()) {
+        while (!window.isClosing()) {
             glfwWaitEvents();
         }
     }

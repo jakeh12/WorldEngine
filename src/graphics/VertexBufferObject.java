@@ -1,7 +1,6 @@
 package graphics;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL15.*;
 

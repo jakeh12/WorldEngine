@@ -6,7 +6,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -164,18 +163,15 @@ public class Renderer {
 
 
         Matrix4f model = new Matrix4f().identity();
-        int modelLocation = program.getUniformLocation("model");
-        program.setUniform(modelLocation, model);
+        updateModelMatrix(model);
 
-        Matrix4f view = new Matrix4f().lookAt(2.0f, 2.0f, -3.0f,
+        Matrix4f view = new Matrix4f().lookAt(0.0f, 0.0f, -4.0f,
                 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f);
-        int viewLocation = program.getUniformLocation("view");
-        program.setUniform(viewLocation, view);
+        updateViewMatrix(view);
 
         Matrix4f projection = new Matrix4f().perspective((float) Math.toRadians(45.0f), (float) width / (float) height, 0.01f, 100.0f);
-        int projectionLocation = program.getUniformLocation("projection");
-        program.setUniform(projectionLocation, projection);
+        updateProjectionMatrix(projection);
 
     }
 
@@ -185,12 +181,21 @@ public class Renderer {
         program.pointVertexAttribute(posAttribute, 3, 3 * Float.BYTES, 0);
     }
 
+    public void updateModelMatrix(Matrix4f model) {
+        program.setUniform(program.getUniformLocation("model"), model);
+    }
+
+    public void updateViewMatrix(Matrix4f view) {
+        program.setUniform(program.getUniformLocation("view"), view);
+    }
+
+    public void updateProjectionMatrix(Matrix4f projection) {
+        program.setUniform(program.getUniformLocation("projection"), projection);
+    }
+
+
     public void delete() {
         MemoryUtil.memFree(vertices);
-
-        if (vao != null) {
-            vao.delete();
-        }
         vbo.delete();
         program.delete();
     }

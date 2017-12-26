@@ -1,16 +1,15 @@
 package graphics;
 
+import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.GL;
 
 import java.nio.IntBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwShowWindow;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memAddress;
-
-import org.lwjgl.opengl.GL;
 
 
 public class Window {
@@ -23,7 +22,6 @@ public class Window {
     private float mouseX, mouseY;
     private boolean[] keyDown = new boolean[GLFW.GLFW_KEY_LAST + 1];
 
-    private GLFWErrorCallback errorCallback;
     private GLFWKeyCallback keyCallback;
     private GLFWCursorPosCallback cursorPosCallback;
 
@@ -108,7 +106,7 @@ public class Window {
         glfwSwapBuffers(id);
     }
 
-    public void destroy() {
+    public void delete() {
         destroyed = true;
         glfwDestroyWindow(id);
         keyCallback.free();
@@ -117,5 +115,9 @@ public class Window {
 
     public boolean isDestroyed() {
         return destroyed;
+    }
+
+    public Vector2f getCursorPosition() {
+        return new Vector2f(mouseX / (float) (width / 2), mouseY / (float) (height / 2));
     }
 }
