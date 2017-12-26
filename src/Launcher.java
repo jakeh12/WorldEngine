@@ -54,9 +54,9 @@ public class Launcher {
             lastTime = thisTime;
 
             Vector2f cursorPos = window.getCursorPosition();
-            q.rotateY((float) Math.toRadians((cursorPos.x - 0.5f) * 100) * dt).normalize();
-            q.rotateX((float) Math.toRadians((cursorPos.y - 0.5f) * 100) * dt).normalize();
-            Matrix4f model = new Matrix4f().rotate(q);
+            Matrix4f model = new Matrix4f();
+            model.rotateX(-cursorPos.y * 10);
+            model.rotateY(-cursorPos.x * 10);
             renderer.updateModelMatrix(model);
 
             renderer.clear();
